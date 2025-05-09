@@ -1,31 +1,31 @@
 {
-    "mcpServers": {
-      "mcp-mysql-server": {
-        "command": "cmd",
-        "args": [
-          "/c",
-          "npx",
-          "-y",
-          "@smithery/cli@latest",
-          "run",
-          "@f4ww4z/mcp-mysql-server",
-          "--config",
-          "{\"mysqlHost\":\"123.206.116.25\",\"mysqlUser\":\"root\",\"mysqlDatabase\":\"study\",\"mysqlPassword\":\"Sugar005@\"}",
-          "--key",
-          "c2216671-f6f7-41f9-a1d2-081c95e522ac"
-        ]
-      },
-      "amap-maps": {
-            "command": "npx",
-            "args": [
-                "-y",
-                "@amap/amap-maps-mcp-server"
-            ],
-            "env": {
-                "AMAP_MAPS_API_KEY": "59f03dec4de91cc2cdf32f904559f64c"
-            }
-        },
-        "fs": {
+  "mcpServers": {
+    "mcp-mysql-server": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@f4ww4z/mcp-mysql-server",
+        "--config",
+        "{\"mysqlHost\":\"123.206.116.25\",\"mysqlUser\":\"root\",\"mysqlDatabase\":\"study\",\"mysqlPassword\":\"Sugar005@\"}",
+        "--key",
+        "c2216671-f6f7-41f9-a1d2-081c95e522ac"
+      ]
+    },
+    "amap-maps": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@amap/amap-maps-mcp-server"
+      ],
+      "env": {
+        "AMAP_MAPS_API_KEY": "59f03dec4de91cc2cdf32f904559f64c"
+      }
+    },
+    "fs": {
       "command": "cmd",
       "args": [
         "/c",
@@ -37,6 +37,35 @@
         "--key",
         "c2216671-f6f7-41f9-a1d2-081c95e522ac"
       ]
-    }
-    }
+    },
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_0000000000000000000000000000000000000000"
+      }
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@automatalabs/mcp-server-playwright"]
+    },
+    "blender": {
+      "command": "uvx",
+      "args": [
+        "blender-mcp"
+      ]
+    },
+    "current-time": {
+         "command": "mcp-rs-template",
+         "args": [
+            "--mcp"
+         ],
+         "env": {
+            "API_KEY": "xxxx"
+         }
+      }
   }
+}

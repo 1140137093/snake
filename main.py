@@ -6,8 +6,8 @@ from pygame import Color
 from texiao import Firework  # Add this import at the top
 
 # 全局定义
-SCREEN_X = 1000
-SCREEN_Y = 800
+SCREEN_X = 800
+SCREEN_Y = 600
 #BACKGROUND_COLOR = Color('blue')
 
 # 方向常量
@@ -181,60 +181,13 @@ def show_text(screen, pos, text, color, font_bold = False, font_size = 60, font_
     #绘制文字  
     screen.blit(text_fmt, pos)
 
-class ColorBackground:
-    def __init__(self):
-        self.hue = 0
-        self.colors = [(0, 0, 0) for _ in range(4)]  # 四个角的颜色
-        self.update_colors()
-        self.background_surface = pygame.Surface((SCREEN_X, SCREEN_Y))
-        self.last_update = 0
-        
-    def update_colors(self):
-        # 更新四个角的颜色
-        self.hue = (self.hue + 0.5) % 360
-        base_hue = self.hue
-        for i in range(4):
-            hue = (base_hue + i * 90) % 360
-            # HSV to RGB conversion
-            h = hue / 60
-            c = 0.7  # 色彩饱和度
-            x = c * (1 - abs(h % 2 - 1))
-            
-            if 0 <= h < 1: rgb = (c, x, 0)
-            elif 1 <= h < 2: rgb = (x, c, 0)
-            elif 2 <= h < 3: rgb = (0, c, x)
-            elif 3 <= h < 4: rgb = (0, x, c)
-            elif 4 <= h < 5: rgb = (x, 0, c)
-            else: rgb = (c, 0, x)
-            
-            # 调整亮度
-            m = 0.3
-            self.colors[i] = tuple(int((c + m) * 255) for c in rgb)
-    
-    def draw(self, screen):
-        current_time = pygame.time.get_ticks()
-        # 每100ms才更新一次背景
-        if current_time - self.last_update > 100:
-            self.update_colors()
-            self.last_update = current_time
-            
-            # 在临时surface上绘制背景
-            for y in range(0, SCREEN_Y, 4):  # 增加步长到4以提高性能
-                for x in range(0, SCREEN_X, 4):
-                    tx = x / SCREEN_X
-                    ty = y / SCREEN_Y
-                    
-                    c1 = [int(self.colors[0][i] * (1-tx) + self.colors[1][i] * tx) for i in range(3)]
-                    c2 = [int(self.colors[2][i] * (1-tx) + self.colors[3][i] * tx) for i in range(3)]
-                    color = [int(c1[i] * (1-ty) + c2[i] * ty) for i in range(3)]
-                    
-                    pygame.draw.rect(self.background_surface, color, (x, y, 4, 4))
-                    
-        # 直接将预渲染的背景绘制到屏幕上
-        screen.blit(self.background_surface, (0, 0))
-
 def main():
     pygame.init()
+    # 加载并播放背景音乐
+    pygame.mixer.init()
+    pygame.mixer.music.load('music.mp3')
+    pygame.mixer.music.set_volume(0.2)  # 设置音量为20%
+    pygame.mixer.music.play(-1)  # -1 表示循环播放
     screen_size = (SCREEN_X,SCREEN_Y)
     screen = pygame.display.set_mode(screen_size)
 
@@ -242,12 +195,15 @@ def main():
     clock = pygame.time.Clock()
     isdead = False
     
-    # 蛇/食物/特效/背景
+    # 加载火星背景图片
+    bg_img = pygame.image.load('mars_bg2.bmp')
+    bg_img = pygame.transform.scale(bg_img, (SCREEN_X, SCREEN_Y))
+
+    # 蛇/食物/特效
     player_snake = Snake(is_ai=False, start_pos=(100,100), color=(20,220,39))
     ai_snake = Snake(is_ai=True, start_pos=(SCREEN_X-200,SCREEN_Y-200), color=(220,20,60))
     food = Food()
     firework = Firework()
-    background = ColorBackground()
     
     # Create restart button (initially hidden)
     restart_button = Button(SCREEN_X//2 - 100, 320, 200, 50, "Restart Game", (34, 139, 34), (50, 205, 50))
@@ -266,8 +222,8 @@ def main():
                 if restart_button.handle_event(event):
                     return main()
                 
-        # 绘制彩色背景
-        background.draw(screen)
+        # 绘制火星背景
+        screen.blit(bg_img, (0, 0))
         
         # 移动蛇
         if not isdead:
