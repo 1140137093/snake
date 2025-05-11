@@ -2,13 +2,15 @@ import pygame
 import sys
 import random
 import math
+import os
 from pygame import Color
 from texiao import Firework  # Add this import at the top
 
 # 全局定义
-SCREEN_X = 800
-SCREEN_Y = 600
+SCREEN_X = 1000
+SCREEN_Y = 800
 #BACKGROUND_COLOR = Color('blue')
+AI2_COLOR = (255, 165, 0)  # 第三条AI蛇颜色（橙色）
 
 # 方向常量
 DIRECTIONS = [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]
@@ -169,6 +171,12 @@ class Food:
             print(self.rect)
             
 
+def draw_snake_number(screen, rect, number):
+    font = pygame.font.SysFont("宋体", 18)
+    text = font.render(str(number), True, (255,255,255))
+    text_rect = text.get_rect(center=rect.center)
+    screen.blit(text, text_rect)
+
 def show_text(screen, pos, text, color, font_bold = False, font_size = 60, font_italic = False):   
     #获取系统字体，并设置文字大小  
     cur_font = pygame.font.SysFont("宋体", font_size)  
@@ -185,7 +193,7 @@ def main():
     pygame.init()
     # 加载并播放背景音乐
     pygame.mixer.init()
-    pygame.mixer.music.load('music.mp3')
+    pygame.mixer.music.load(os.path.join('snake', 'music.mp3'))
     pygame.mixer.music.set_volume(0.2)  # 设置音量为20%
     pygame.mixer.music.play(-1)  # -1 表示循环播放
     screen_size = (SCREEN_X,SCREEN_Y)
@@ -196,12 +204,13 @@ def main():
     isdead = False
     
     # 加载火星背景图片
-    bg_img = pygame.image.load('mars_bg2.bmp')
+    bg_img = pygame.image.load(os.path.join('snake', 'mars_bg2.bmp'))
     bg_img = pygame.transform.scale(bg_img, (SCREEN_X, SCREEN_Y))
 
     # 蛇/食物/特效
     player_snake = Snake(is_ai=False, start_pos=(100,100), color=(20,220,39))
     ai_snake = Snake(is_ai=True, start_pos=(SCREEN_X-200,SCREEN_Y-200), color=(220,20,60))
+    ai_snake2 = Snake(is_ai=True, start_pos=(SCREEN_X//2, SCREEN_Y//2), color=AI2_COLOR)
     food = Food()
     firework = Firework()
     
@@ -229,7 +238,9 @@ def main():
         if not isdead:
             player_snake.move()
             ai_snake.move()
+            ai_snake2.move()
             ai_snake.ai_move(food)
+            ai_snake2.ai_move(food)
             
         # 画玩家蛇
         for rect in player_snake.body:
@@ -238,11 +249,18 @@ def main():
         # 画AI蛇
         for rect in ai_snake.body:
             pygame.draw.rect(screen, ai_snake.color, rect, 0)
+            draw_snake_number(screen, rect, 2)
+            
+        # 画第三条AI蛇
+        for rect in ai_snake2.body:
+            pygame.draw.rect(screen, ai_snake2.color, rect, 0)
+            draw_snake_number(screen, rect, 10)
             
         # 检查死亡状态
-        player_dead = player_snake.isdead(ai_snake)
-        ai_dead = ai_snake.isdead(player_snake)
-        isdead = player_dead or ai_dead
+        player_dead = player_snake.isdead(ai_snake) or player_snake.isdead(ai_snake2)
+        ai_dead = ai_snake.isdead(player_snake) or ai_snake.isdead(ai_snake2)
+        ai2_dead = ai_snake2.isdead(player_snake) or ai_snake2.isdead(ai_snake)
+        isdead = player_dead or ai_dead or ai2_dead
         
         if isdead:
             if player_dead and ai_dead:
@@ -268,6 +286,13 @@ def main():
             food.remove()
             ai_snake.addnode()
             firework.create_explosion(effect_x, effect_y)
+        elif food.rect == ai_snake2.body[0]:
+            effect_x = food.rect.x + food.rect.width // 2
+            effect_y = food.rect.y + food.rect.height // 2
+            ai_snake2.score += 50
+            food.remove()
+            ai_snake2.addnode()
+            firework.create_explosion(effect_x, effect_y)
         
         # 食物投递
         food.set()
@@ -279,7 +304,8 @@ def main():
         
         # 显示分数文字
         show_text(screen,(50,500),'Player: '+str(player_snake.score),(223,223,223))
-        show_text(screen,(50,550),'AI: '+str(ai_snake.score),(223,223,223))
+        show_text(screen,(50,550),'AI 1: '+str(ai_snake.score),(223,223,223))
+        show_text(screen,(SCREEN_X-200,550),'AI 10: '+str(ai_snake2.score),(223,223,223))
         
         pygame.display.update()
         clock.tick(10)
