@@ -4,7 +4,7 @@ import random
 import math
 import os
 from pygame import Color
-from texiao import Firework  # Add this import at the top
+from texiao import Firework, FlowerEffect  # 添加 FlowerEffect 的导入
 
 # 全局定义
 SCREEN_X = 1000
@@ -44,9 +44,32 @@ class Button:
 
 # 蛇类
 # 点以25为单位
+class Bullet:
+    def __init__(self, x, y, direction):
+        self.rect = pygame.Rect(x-5, y-5, 10, 10)
+        self.direction = direction
+        self.speed = 20
+        self.lifetime = 150  # 存活时间5秒（150帧）
+
+    def update(self):
+        if self.direction == pygame.K_LEFT:
+            self.rect.x -= self.speed
+        elif self.direction == pygame.K_RIGHT:
+            self.rect.x += self.speed
+        elif self.direction == pygame.K_UP:
+            self.rect.y -= self.speed
+        elif self.direction == pygame.K_DOWN:
+            self.rect.y += self.speed
+        self.lifetime -= 1
+        return self.lifetime > 0 and self.rect.colliderect(pygame.Rect(0,0,SCREEN_X,SCREEN_Y))
+
+    def draw(self, screen):
+        pygame.draw.circle(screen, (0,0,0), self.rect.center, 5)
+
 class Snake(object):
     # 初始化各种需要的属性 [开始时默认向右/身体块x5]
     def __init__(self, is_ai=False, start_pos=(0,0), color=(20,220,39)):
+        self.bullets = []
         self.dirction = pygame.K_RIGHT
         self.body = []
         self.is_ai = is_ai
@@ -196,27 +219,28 @@ def main():
     pygame.mixer.music.load(os.path.join('snake', 'music.mp3'))
     pygame.mixer.music.set_volume(0.2)  # 设置音量为20%
     pygame.mixer.music.play(-1)  # -1 表示循环播放
-    screen_size = (SCREEN_X,SCREEN_Y)
+    screen_size = (SCREEN_X, SCREEN_Y)
     screen = pygame.display.set_mode(screen_size)
 
-    pygame.display.set_caption('Snake')
+    pygame.display.set_caption('贪吃蛇：起源')
     clock = pygame.time.Clock()
     isdead = False
-    
+
     # 加载火星背景图片
     bg_img = pygame.image.load(os.path.join('snake', 'mars_bg2.bmp'))
     bg_img = pygame.transform.scale(bg_img, (SCREEN_X, SCREEN_Y))
 
     # 蛇/食物/特效
-    player_snake = Snake(is_ai=False, start_pos=(100,100), color=(20,220,39))
-    ai_snake = Snake(is_ai=True, start_pos=(SCREEN_X-200,SCREEN_Y-200), color=(220,20,60))
-    ai_snake2 = Snake(is_ai=True, start_pos=(SCREEN_X//2, SCREEN_Y//2), color=AI2_COLOR)
+    player_snake = Snake(is_ai=False, start_pos=(100, 100), color=(20, 220, 39))
+    ai_snake = Snake(is_ai=True, start_pos=(SCREEN_X - 200, SCREEN_Y - 200), color=(60, 255, 60))
+    ai_snake2 = Snake(is_ai=True, start_pos=(SCREEN_X // 2, SCREEN_Y // 2), color=AI2_COLOR)
     food = Food()
     firework = Firework()
-    
+    flower_effect = FlowerEffect()  # 创建花朵特效实例
+
     # Create restart button (initially hidden)
-    restart_button = Button(SCREEN_X//2 - 100, 320, 200, 50, "Restart Game", (34, 139, 34), (50, 205, 50))
-    
+    restart_button = Button(SCREEN_X // 2 - 100, 320, 200, 50, "Restart Game", (34, 139, 34), (50, 205, 50))
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -233,7 +257,15 @@ def main():
                 
         # 绘制火星背景
         screen.blit(bg_img, (0, 0))
-        
+
+        # 随机生成花朵特效
+        if random.random() < 0.02:  # 2% 概率生成花朵
+            flower_effect.create_flower(random.randint(0, SCREEN_X), random.randint(0, SCREEN_Y))
+
+        # 更新和绘制花朵特效
+        flower_effect.update()
+        flower_effect.draw(screen)
+
         # 移动蛇
         if not isdead:
             player_snake.move()
