@@ -460,7 +460,7 @@ def main():
     pygame.init()
     # 加载并播放背景音乐
     pygame.mixer.init()
-    pygame.mixer.music.load(os.path.join('snake', 'music.mp3'))
+    pygame.mixer.music.load('music.mp3')
     pygame.mixer.music.set_volume(0.2)  # 设置音量为20%
     pygame.mixer.music.play(-1)  # -1 表示循环播放
     screen_size = (SCREEN_X, SCREEN_Y)
@@ -471,7 +471,7 @@ def main():
     isdead = False
 
     # 加载火星背景图片
-    bg_img = pygame.image.load(os.path.join('snake', 'mars_bg2.bmp'))
+    bg_img = pygame.image.load('mars_bg2.bmp')
     bg_img = pygame.transform.scale(bg_img, (SCREEN_X, SCREEN_Y))
 
     # 蛇/食物/特效
